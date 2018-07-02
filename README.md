@@ -7,8 +7,7 @@ Not a formal protocol. I observed a lot of traffic from to broadcast on UDP 1000
 ## How?
 `wireshark -X lua_script:unifi.lua <pcap>.pcap`
 
-[Hey it works!](/img/unifi_lua_1.png)
-
+![lua_dissector_1](/img/unifi_lua_1.png "Hey look it works!")
 
 ## Why?
 Why not? If you have interesting traffic that doesn't parse, feel free to send it my way.
