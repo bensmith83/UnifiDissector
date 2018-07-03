@@ -15,7 +15,7 @@ unifi_proto.fields.version = ProtoField.string("unifi.version", "Version")
 unifi_proto.fields.numbers = ProtoField.string("unifi.product_code_again", "Product Code, Again")
 unifi_proto.fields.build = ProtoField.string("unifi.build", "Build")
 unifi_proto.fields.product_code_again = ProtoField.string("unifi.product_code_again", "Product Code Again")
-unifi_proto.fields.different_version = ProtoField.string("unifi.different_version", "Probably the backup firmware")
+unifi_proto.fields.required_fw_version = ProtoField.string("unifi.required_fw_version", "Board Required Firmware Version")
 unifi_proto.fields.seventeen = ProtoField.bytes("unifi.seventeen", "seventeen")
 unifi_proto.fields.eighteen = ProtoField.bytes("unifi.eighteen", "eighteen")
 unifi_proto.fields.nineteen = ProtoField.bytes("unifi.nineteen", "nineteen")
@@ -87,7 +87,7 @@ function unifi_proto.dissector(buffer, pinfo, tree)
     subtree:add(unifi_proto.fields.twelve, buffer(pkt_ptr+1, temp_len))
     pkt_ptr = pkt_ptr + temp_len + 3
     temp_len = buffer(pkt_ptr,1):uint()
-    ogtree:add(unifi_proto.fields.different_version, buffer(pkt_ptr+1, temp_len))
+    ogtree:add(unifi_proto.fields.required_fw_version, buffer(pkt_ptr+1, temp_len))
 end
 
 -- get UDP dissector table and add for port 10001
