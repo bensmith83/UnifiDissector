@@ -8,7 +8,7 @@ unifi_proto.fields.preamble2_mac = ProtoField.bytes("unifi.preamble2_mac", "Prea
 unifi_proto.fields.preamble2 = ProtoField.bytes("unifi.preamble2", "Preamble2 - Static")
 unifi_proto.fields.source_mac = ProtoField.bytes("unifi.source_mac", "Source MAC")
 unifi_proto.fields.preamble3 = ProtoField.bytes("unifi.preamble3", "Preamble3 - Counter")
-unifi_proto.fields.ubnt = ProtoField.string("unifi.ubnt", "Ubnt")
+unifi_proto.fields.name = ProtoField.string("unifi.name", "Name")
 unifi_proto.fields.product_code = ProtoField.string("unifi.product_code", "Product Code")
 unifi_proto.fields.firmware = ProtoField.string("unifi.firmware", "Firmware")
 unifi_proto.fields.version = ProtoField.string("unifi.version", "Version")
@@ -54,7 +54,7 @@ function unifi_proto.dissector(buffer, pinfo, tree)
     subtree:add(unifi_proto.fields.preamble3, buffer(pkt_ptr+1, temp_len))
     pkt_ptr = pkt_ptr + temp_len + 3
     temp_len = buffer(pkt_ptr,1):uint()
-    ogtree:add(unifi_proto.fields.ubnt, buffer(pkt_ptr+1, temp_len))
+    ogtree:add(unifi_proto.fields.name, buffer(pkt_ptr+1, temp_len))
     pkt_ptr = pkt_ptr + temp_len + 3
     temp_len = buffer(pkt_ptr,1):uint()
     ogtree:add(unifi_proto.fields.product_code, buffer(pkt_ptr+1, temp_len))
