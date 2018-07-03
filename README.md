@@ -23,13 +23,13 @@ Payload follows a Type Length Value (TLV) structure. The length seems to be two 
 0x12 - 4 bytes that change or increment every packet
 0x1B - version - likely the backup firmware on the device
 
-Right now this doesn't match on the type code above, it expects them in order. This will be fixed soon.
+Right now this doesn't match on the type code above, it expects them in order. This will be fixed soon. If you have any suggestions for what some of these unknown fields are, please let me know.
 
 ## How?
 `wireshark -X lua_script:unifi.lua <pcap>.pcap`
 
-[Hey it works!](/img/unifi_lua_1.png)
-
+## Really?
+![lua_dissector_1](/img/unifi_lua_1.png "Yes.")
 
 ## Why?
 Why not? If you have interesting traffic that doesn't parse, feel free to send it my way.
