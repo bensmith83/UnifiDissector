@@ -44,46 +44,55 @@ function unifi_proto.dissector(buffer, pinfo, tree)
     local temp_type = 0
     blip = buffer(0,1):uint()
     blap = buffer(1,1):uint()
-    if (blip == 0x01 and blap == 0x00) or (blip == 0x06 and blap == 0x02) then
+    if (blip == 0x01 and blap == 0x00) or (blip == 0x02 and blap == 0x06) then
         ogtree:add(unifi_proto.fields.payload_len, buffer(3, 1), payload_len)
-        pkt_ptr = 5
+        pkt_ptr = 4
         while pkt_ptr<payload_len do
+            --info("pkt_ptr: "..pkt_ptr)
             temp_type = buffer(pkt_ptr, 1):uint()
+            --info("temp_type: "..temp_type)
             pkt_ptr = pkt_ptr +1
+            --info("pkt_ptr: "..pkt_ptr)
             temp_len = buffer(pkt_ptr, 2):uint()
+            --info("temp_len: "..temp_len)
             pkt_ptr = pkt_ptr + 2
-            add_lookup_type(temp_type, temp_len, pkt_ptr)
+            --info("pkt_ptr: "..pkt_ptr)
+            add_lookup_type(temp_type, temp_len, pkt_ptr, ogtree, buffer, payload_len)
+            pkt_ptr = pkt_ptr + temp_len
         end
     end
 end
 
-function add_lookup_type(field_type, field_len, field_value_ptr)
+function add_lookup_type(field_type, field_len, field_value_ptr, tree, buffer, payload_len)
+    if field_value_ptr + field_len > payload_len then
+        return
+    end
     if field_type == 0x01 then
 		 -- MAC
-        ogtree:add(unifi_proto.fields.source_mac, buffer(field_value_ptr, field_len))
+        tree:add(unifi_proto.fields.source_mac, buffer(field_value_ptr, field_len))
 	end
 	if field_type == 0x02 then
 		 -- MAC & 4 bytes that remain static per device
-        subtree = ogtree:add(unifi_proto.fields.preamble, buffer(field_value_ptr, field_len))
+        subtree = tree:add(unifi_proto.fields.preamble, buffer(field_value_ptr, field_len))
         subtree:add(unifi_proto.fields.preamble2_mac, buffer(field_value_ptr, field_len - 4))
         subtree:add(unifi_proto.fields.preamble2, buffer(field_value_ptr + 6, 4))
 	end
 	if field_type == 0x03 then
 		 -- firmware
-        ogtree:add(unifi_proto.fields.firmware, buffer(field_value_ptr, field_len))
+        tree:add(unifi_proto.fields.firmware, buffer(field_value_ptr, field_len))
 	end
 	if field_type == 0x0A then
 		 -- 4 bytes that increment every 5 seconds
-        ogtree:add(unifi_proto.fields.preamble3, buffer(field_value_ptr, field_len))
+        tree:add(unifi_proto.fields.preamble3, buffer(field_value_ptr, field_len))
 	end
 	if field_type == 0x0B then
 		 -- Name then
 		 -- common name given to the device or hostname
-        ogtree:add(unifi_proto.fields.name, buffer(field_value_ptr, field_len))
+        tree:add(unifi_proto.fields.name, buffer(field_value_ptr, field_len))
 	end
 	if field_type == 0x0C then
 		 -- product code
-        ogtree:add(unifi_proto.fields.shortname, buffer(field_value_ptr, field_len))
+        tree:add(unifi_proto.fields.shortname, buffer(field_value_ptr, field_len))
     end
     --else if field_type == 0x10 then
 		 -- ???? 2 bytes	
@@ -91,43 +100,44 @@ function add_lookup_type(field_type, field_len, field_value_ptr)
 	--end
 	if field_type == 0x12 then
 		 -- 4 bytes that change or increment every packet
-        ogtree:add(unifi_proto.fields.twelve, buffer(field_value_ptr, field_len))
+        tree:add(unifi_proto.fields.twelve, buffer(field_value_ptr, field_len))
 	end
 	if field_type== 0x13 then
 		 -- MAC
-        ogtree:add(unifi_proto.fields.mac_address_again, buffer(field_value_ptr, field_len))
+        tree:add(unifi_proto.fields.mac_address_again, buffer(field_value_ptr, field_len))
 	end
 	if field_type == 0x15 then
 		 -- product code
-        ogtree:add(unifi_proto.fields.shortname_again, buffer(field_value_ptr, field_len))
+        tree:add(unifi_proto.fields.shortname_again, buffer(field_value_ptr, field_len))
 	end
 	if field_type == 0x16 then
 		 -- version
-        ogtree:add(unifi_proto.fields.version, buffer(field_value_ptr, field_len))
+        tree:add(unifi_proto.fields.version, buffer(field_value_ptr, field_len))
 	end
 	if field_type == 0x17 then
 		 -- ????
         --unktree = 
-        ogtree:add(unifi_proto.fields.seventeen, buffer(field_value_ptr, field_len))
+        tree:add(unifi_proto.fields.seventeen, buffer(field_value_ptr, field_len))
 	end
 	if field_type == 0x18 then
 		 -- ????
         --unktree = 
-        ogtree:add(unifi_proto.fields.eighteen, buffer(field_value_ptr, field_len))
+        tree:add(unifi_proto.fields.eighteen, buffer(field_value_ptr, field_len))
 	end
 	if field_type == 0x19 then
 		 -- ????
         --unktree = 
-        ogtree:add(unifi_proto.fields.nineteen, buffer(field_value_ptr, field_len))
+        tree:add(unifi_proto.fields.nineteen, buffer(field_value_ptr, field_len))
 	end
 	if field_type == 0x1A then
 		 -- ????
         --unktree = 
-        ogtree:add(unifi_proto.fields.oneayy, buffer(field_value_ptr, field_len))
+        tree:add(unifi_proto.fields.oneayy, buffer(field_value_ptr, field_len))
 	end
 	if field_type == 0x1B then
 		 -- version - likely the backup firmware on the device
-        ogtree:add(unifi_proto.fields.required_fw_version, buffer(field_value_ptr, field_len))
+        info("1b req_fw: field_value_ptr: "..field_value_ptr.."; field_len: "..field_len)
+        tree:add(unifi_proto.fields.required_fw_version, buffer(field_value_ptr, field_len))
     end
 end
 
