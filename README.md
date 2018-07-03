@@ -33,3 +33,6 @@ Right now this doesn't match on the type code above, it expects them in order. T
 
 ## Why?
 Why not? If you have interesting traffic that doesn't parse, feel free to send it my way.
+
+## Thanks
+Many thanks to James Forshaw's [Attacking Network Protocols](https://nostarch.com/networkprotocols) for showing how easy it is to write Wireshark dissectors, among other great things.
