@@ -2,6 +2,7 @@
 unifi_proto = Proto("unifi", "Unifi Broadcast Protocol")
 
 -- Specifiy protocol fields
+unifi_proto.fields.payload_len = ProtoField.uint32("unifi.payload_len", "Payload Length")
 unifi_proto.fields.preamble = ProtoField.bytes("unifi.preamble", "Preamble")
 unifi_proto.fields.preamble2_mac = ProtoField.bytes("unifi.preamble2_mac", "Preamble2 MAC")
 unifi_proto.fields.preamble2 = ProtoField.bytes("unifi.preamble2", "Preamble2 - Static")
@@ -39,7 +40,8 @@ function unifi_proto.dissector(buffer, pinfo, tree)
     local ogtree = tree:add(unifi_proto, buffer(), "Unifi Protocol Data")
     local temp_len = 0
     local pkt_ptr = 0
-    temp_len = buffer(3,1):uint() -- payload len
+    local payload_len = buffer(3,1):uint() -- payload len
+    ogtree:add(unifi_proto.fields.payload_len, buffer(3, 1), payload_len)
     temp_len = buffer(FIRST_FIELD,1):uint() -- first field len, binary
     subtree = ogtree:add(unifi_proto.fields.preamble, buffer(FIRST_FIELD+1,temp_len))
     subtree:add(unifi_proto.fields.preamble2_mac, buffer(FIRST_FIELD+1, temp_len - 4))
@@ -87,12 +89,7 @@ function unifi_proto.dissector(buffer, pinfo, tree)
     temp_len = buffer(pkt_ptr,1):uint()
     ogtree:add(unifi_proto.fields.different_version, buffer(pkt_ptr+1, temp_len))
 end
-unifi_proto.fields.seventeen = ProtoField.bytes("unifi.seventeen", "seventeen")
-unifi_proto.fields.eighteen = ProtoField.bytes("unifi.eighteen", "eighteen")
-unifi_proto.fields.nineteen = ProtoField.bytes("unifi.nineteen", "nineteen")
-unifi_proto.fields.oneayy = ProtoField.bytes("unifi.oneayy", "oneayy")
-unifi_proto.fields.mac_address_again = ProtoField.bytes("unifi.mac_address_again", "mac_address_again")
-unifi_proto.fields.twelve = ProtoField.bytes("unifi.twelve", "twelve")
+
 -- get UDP dissector table and add for port 10001
 udp_table = DissectorTable.get("udp.port")
 udp_table:add(10001, unifi_proto)
