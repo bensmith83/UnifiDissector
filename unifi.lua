@@ -23,6 +23,7 @@ unifi_proto.fields.oneayy = ProtoField.bytes("unifi.oneayy", "Unknown - oneayy")
 unifi_proto.fields.mac_address_again = ProtoField.bytes("unifi.mac_address_again", "mac_address_again")
 unifi_proto.fields.twelve = ProtoField.bytes("unifi.twelve", "Unknown - twelve - Counter")
 unifi_proto.fields.ten = ProtoField.bytes("unifi.ten", "Unknown - ten")
+unifi_proto.fields.request = ProtoField.string("unifi.request", "Request")
 
 -- Global Variables
 FIRST_FIELD = 6
@@ -48,20 +49,24 @@ function unifi_proto.dissector(buffer, pinfo, tree)
     blap = buffer(1,1):uint()
     if (blip == 0x01 and blap == 0x00) or (blip == 0x02 and blap == 0x06) then
         ogtree:add(unifi_proto.fields.payload_len, buffer(3, 1), payload_len)
+        if (blip == 0x01 and blap == 0x00 and payload_len == 0x00) then
+            ogtree:add(unifi_proto.fields.request, buffer(3,1), "Request")
+        end
         pkt_ptr = 4
-        while pkt_ptr<payload_len do
-            --info("pkt_ptr: "..pkt_ptr)
+        while pkt_ptr<payload_len +4 do
+            info("pkt_ptr: "..pkt_ptr)
             temp_type = buffer(pkt_ptr, 1):uint()
-            --info("temp_type: "..temp_type)
+            info("temp_type: "..temp_type)
             pkt_ptr = pkt_ptr +1
-            --info("pkt_ptr: "..pkt_ptr)
+            info("pkt_ptr: "..pkt_ptr)
             temp_len = buffer(pkt_ptr, 2):uint()
-            --info("temp_len: "..temp_len)
+            info("temp_len: "..temp_len)
             pkt_ptr = pkt_ptr + 2
-            --info("pkt_ptr: "..pkt_ptr)
-            add_lookup_type(temp_type, temp_len, pkt_ptr, ogtree, buffer, payload_len)
+            info("pkt_ptr: "..pkt_ptr)
+            add_lookup_type(temp_type, temp_len, pkt_ptr, ogtree, buffer, payload_len + 4)
             pkt_ptr = pkt_ptr + temp_len
         end
+        info("end loop: pkt_ptr: "..pkt_ptr.."; payload_len: "..payload_len.."; temp_len: "..temp_len)
     end
 end
 
