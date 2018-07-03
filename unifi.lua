@@ -4,9 +4,9 @@ unifi_proto = Proto("unifi", "Unifi Discovery Protocol")
 -- Specifiy protocol fields
 unifi_proto.fields.payload_len = ProtoField.uint32("unifi.payload_len", "Payload Length")
 unifi_proto.fields.preamble = ProtoField.bytes("unifi.preamble", "Preamble")
-unifi_proto.fields.preamble2_mac = ProtoField.bytes("unifi.preamble2_mac", "Preamble2 MAC")
-unifi_proto.fields.preamble2 = ProtoField.bytes("unifi.preamble2", "Unknown - Preamble2 - Static")
-unifi_proto.fields.source_mac = ProtoField.bytes("unifi.source_mac", "Source MAC")
+unifi_proto.fields.preamble2_mac = ProtoField.ether("unifi.preamble2_mac", "Preamble2 MAC")
+unifi_proto.fields.src_ip = ProtoField.ipv4("unifi.src_ip", "Src IP")
+unifi_proto.fields.source_mac = ProtoField.ether("unifi.source_mac", "Source MAC")
 unifi_proto.fields.preamble3 = ProtoField.bytes("unifi.preamble3", "Unknown - Preamble3 - Counter")
 unifi_proto.fields.name = ProtoField.string("unifi.name", "Name")
 unifi_proto.fields.shortname = ProtoField.string("unifi.shortname", "Board Shortname")
@@ -20,7 +20,7 @@ unifi_proto.fields.seventeen = ProtoField.bytes("unifi.seventeen", "Unknown - se
 unifi_proto.fields.eighteen = ProtoField.bytes("unifi.eighteen", "Unknown - eighteen")
 unifi_proto.fields.nineteen = ProtoField.bytes("unifi.nineteen", "Unknown - nineteen")
 unifi_proto.fields.oneayy = ProtoField.bytes("unifi.oneayy", "Unknown - oneayy")
-unifi_proto.fields.mac_address_again = ProtoField.bytes("unifi.mac_address_again", "mac_address_again")
+unifi_proto.fields.mac_address_again = ProtoField.ether("unifi.mac_address_again", "mac_address_again")
 unifi_proto.fields.twelve = ProtoField.bytes("unifi.twelve", "Unknown - twelve - Counter")
 unifi_proto.fields.ten = ProtoField.bytes("unifi.ten", "Unknown - ten")
 unifi_proto.fields.request = ProtoField.string("unifi.request", "Request")
@@ -82,7 +82,7 @@ function add_lookup_type(field_type, field_len, field_value_ptr, tree, buffer, p
 		 -- MAC & 4 bytes that remain static per device
         subtree = tree:add(unifi_proto.fields.preamble, buffer(field_value_ptr, field_len))
         subtree:add(unifi_proto.fields.preamble2_mac, buffer(field_value_ptr, field_len - 4))
-        subtree:add(unifi_proto.fields.preamble2, buffer(field_value_ptr + 6, 4))
+        subtree:add(unifi_proto.fields.src_ip, buffer(field_value_ptr + 6, 4))
 	end
 	if field_type == 0x03 then
 		 -- firmware
