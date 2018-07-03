@@ -5,9 +5,9 @@ unifi_proto = Proto("unifi", "Unifi Discovery Protocol")
 unifi_proto.fields.payload_len = ProtoField.uint32("unifi.payload_len", "Payload Length")
 unifi_proto.fields.preamble = ProtoField.bytes("unifi.preamble", "Preamble")
 unifi_proto.fields.preamble2_mac = ProtoField.bytes("unifi.preamble2_mac", "Preamble2 MAC")
-unifi_proto.fields.preamble2 = ProtoField.bytes("unifi.preamble2", "Preamble2 - Static")
+unifi_proto.fields.preamble2 = ProtoField.bytes("unifi.preamble2", "Unknown - Preamble2 - Static")
 unifi_proto.fields.source_mac = ProtoField.bytes("unifi.source_mac", "Source MAC")
-unifi_proto.fields.preamble3 = ProtoField.bytes("unifi.preamble3", "Preamble3 - Counter")
+unifi_proto.fields.preamble3 = ProtoField.bytes("unifi.preamble3", "Unknown - Preamble3 - Counter")
 unifi_proto.fields.name = ProtoField.string("unifi.name", "Name")
 unifi_proto.fields.shortname = ProtoField.string("unifi.shortname", "Board Shortname")
 unifi_proto.fields.firmware = ProtoField.string("unifi.firmware", "Firmware")
@@ -16,12 +16,13 @@ unifi_proto.fields.numbers = ProtoField.string("unifi.shortname_again", "Product
 unifi_proto.fields.build = ProtoField.string("unifi.build", "Build")
 unifi_proto.fields.shortname_again = ProtoField.string("unifi.shortname_again", "Product Code Again")
 unifi_proto.fields.required_fw_version = ProtoField.string("unifi.required_fw_version", "Board Required Firmware Version")
-unifi_proto.fields.seventeen = ProtoField.bytes("unifi.seventeen", "seventeen")
-unifi_proto.fields.eighteen = ProtoField.bytes("unifi.eighteen", "eighteen")
-unifi_proto.fields.nineteen = ProtoField.bytes("unifi.nineteen", "nineteen")
-unifi_proto.fields.oneayy = ProtoField.bytes("unifi.oneayy", "oneayy")
+unifi_proto.fields.seventeen = ProtoField.bytes("unifi.seventeen", "Unknown - seventeen")
+unifi_proto.fields.eighteen = ProtoField.bytes("unifi.eighteen", "Unknown - eighteen")
+unifi_proto.fields.nineteen = ProtoField.bytes("unifi.nineteen", "Unknown - nineteen")
+unifi_proto.fields.oneayy = ProtoField.bytes("unifi.oneayy", "Unknown - oneayy")
 unifi_proto.fields.mac_address_again = ProtoField.bytes("unifi.mac_address_again", "mac_address_again")
-unifi_proto.fields.twelve = ProtoField.bytes("unifi.twelve", "twelve - Counter")
+unifi_proto.fields.twelve = ProtoField.bytes("unifi.twelve", "Unknown - twelve - Counter")
+unifi_proto.fields.ten = ProtoField.bytes("unifi.ten", "Unknown - ten")
 
 -- Global Variables
 FIRST_FIELD = 6
@@ -95,10 +96,11 @@ function add_lookup_type(field_type, field_len, field_value_ptr, tree, buffer, p
 		 -- product code
         tree:add(unifi_proto.fields.shortname, buffer(field_value_ptr, field_len))
     end
-    --else if field_type == 0x10 then
-		 -- ???? 2 bytes	
+    if field_type == 0x10 then
+		-- ???? 2 bytes	
         -- TODO: addme
-	--end
+        tree:add(unifi_proto.fields.ten, buffer(field_value_ptr, field_len))
+	end
 	if field_type == 0x12 then
 		 -- 4 bytes that change or increment every packet
         tree:add(unifi_proto.fields.twelve, buffer(field_value_ptr, field_len))
