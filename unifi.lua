@@ -7,7 +7,7 @@ unifi_proto.fields.preamble = ProtoField.bytes("unifi.preamble", "Preamble")
 unifi_proto.fields.preamble2_mac = ProtoField.ether("unifi.preamble2_mac", "Preamble2 MAC")
 unifi_proto.fields.src_ip = ProtoField.ipv4("unifi.src_ip", "Src IP")
 unifi_proto.fields.source_mac = ProtoField.ether("unifi.source_mac", "Source MAC")
-unifi_proto.fields.preamble3 = ProtoField.bytes("unifi.preamble3", "Unknown - Preamble3 - Counter")
+unifi_proto.fields.time = ProtoField.relative_time("unifi.time", "Time Offset")
 unifi_proto.fields.name = ProtoField.string("unifi.name", "Name")
 unifi_proto.fields.shortname = ProtoField.string("unifi.shortname", "Board Shortname")
 unifi_proto.fields.firmware = ProtoField.string("unifi.firmware", "Firmware")
@@ -21,7 +21,7 @@ unifi_proto.fields.eighteen = ProtoField.bytes("unifi.eighteen", "Unknown - eigh
 unifi_proto.fields.nineteen = ProtoField.bytes("unifi.nineteen", "Unknown - nineteen")
 unifi_proto.fields.oneayy = ProtoField.bytes("unifi.oneayy", "Unknown - oneayy")
 unifi_proto.fields.mac_address_again = ProtoField.ether("unifi.mac_address_again", "mac_address_again")
-unifi_proto.fields.twelve = ProtoField.bytes("unifi.twelve", "Unknown - twelve - Counter")
+unifi_proto.fields.count = ProtoField.uint32("unifi.count", "Packet Count")
 unifi_proto.fields.ten = ProtoField.bytes("unifi.ten", "Unknown - ten")
 unifi_proto.fields.request = ProtoField.string("unifi.request", "Request")
 
@@ -90,7 +90,7 @@ function add_lookup_type(field_type, field_len, field_value_ptr, tree, buffer, p
 	end
 	if field_type == 0x0A then
 		 -- 4 bytes that increment every 5 seconds
-        tree:add(unifi_proto.fields.preamble3, buffer(field_value_ptr, field_len))
+        tree:add(unifi_proto.fields.time, buffer(field_value_ptr, field_len))
 	end
 	if field_type == 0x0B then
 		 -- Name then
@@ -103,12 +103,11 @@ function add_lookup_type(field_type, field_len, field_value_ptr, tree, buffer, p
     end
     if field_type == 0x10 then
 		-- ???? 2 bytes	
-        -- TODO: addme
         tree:add(unifi_proto.fields.ten, buffer(field_value_ptr, field_len))
 	end
 	if field_type == 0x12 then
 		 -- 4 bytes that change or increment every packet
-        tree:add(unifi_proto.fields.twelve, buffer(field_value_ptr, field_len))
+        tree:add(unifi_proto.fields.count, buffer(field_value_ptr, field_len))
 	end
 	if field_type== 0x13 then
 		 -- MAC
