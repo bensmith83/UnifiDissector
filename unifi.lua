@@ -42,6 +42,7 @@ function unifi_proto.dissector(buffer, pinfo, tree)
     local pkt_ptr = 0
     local payload_len = buffer(3,1):uint() -- payload len
     local temp_type = 0
+  
     blip = buffer(0,1):uint()
     blap = buffer(1,1):uint()
     if (blip == 0x01 and blap == 0x00) or (blip == 0x02 and blap == 0x06) then
