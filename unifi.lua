@@ -9,13 +9,13 @@ unifi_proto.fields.preamble2 = ProtoField.bytes("unifi.preamble2", "Preamble2 - 
 unifi_proto.fields.source_mac = ProtoField.bytes("unifi.source_mac", "Source MAC")
 unifi_proto.fields.preamble3 = ProtoField.bytes("unifi.preamble3", "Preamble3 - Counter")
 unifi_proto.fields.name = ProtoField.string("unifi.name", "Name")
-unifi_proto.fields.product_code = ProtoField.string("unifi.product_code", "Product Code")
+unifi_proto.fields.shortname = ProtoField.string("unifi.shortname", "Board Shortname")
 unifi_proto.fields.firmware = ProtoField.string("unifi.firmware", "Firmware")
 unifi_proto.fields.version = ProtoField.string("unifi.version", "Version")
-unifi_proto.fields.numbers = ProtoField.string("unifi.product_code_again", "Product Code, Again")
+unifi_proto.fields.numbers = ProtoField.string("unifi.shortname_again", "Product Code, Again")
 unifi_proto.fields.build = ProtoField.string("unifi.build", "Build")
-unifi_proto.fields.product_code_again = ProtoField.string("unifi.product_code_again", "Product Code Again")
-unifi_proto.fields.different_version = ProtoField.string("unifi.different_version", "Probably the backup firmware")
+unifi_proto.fields.shortname_again = ProtoField.string("unifi.shortname_again", "Product Code Again")
+unifi_proto.fields.required_fw_version = ProtoField.string("unifi.required_fw_version", "Board Required Firmware Version")
 unifi_proto.fields.seventeen = ProtoField.bytes("unifi.seventeen", "seventeen")
 unifi_proto.fields.eighteen = ProtoField.bytes("unifi.eighteen", "eighteen")
 unifi_proto.fields.nineteen = ProtoField.bytes("unifi.nineteen", "nineteen")
@@ -44,7 +44,7 @@ function unifi_proto.dissector(buffer, pinfo, tree)
     local temp_type = 0
     blip = buffer(0,1):uint()
     blap = buffer(1,1):uint()
-    if (blip == 0x01 && blap == 0x00) || (blip == 0x06 && blap == 0x02) then
+    if (blip == 0x01 and blap == 0x00) or (blip == 0x06 and blap == 0x02) then
         ogtree:add(unifi_proto.fields.payload_len, buffer(3, 1), payload_len)
         pkt_ptr = 5
         while pkt_ptr<payload_len do
@@ -52,76 +52,84 @@ function unifi_proto.dissector(buffer, pinfo, tree)
             pkt_ptr = pkt_ptr +1
             temp_len = buffer(pkt_ptr, 2):uint()
             pkt_ptr = pkt_ptr + 2
+            add_lookup_type(temp_type, temp_len, pkt_ptr)
         end
     end
-
-    ogtree:add(unifi_proto.fields.payload_len, buffer(3, 1), payload_len)
-    temp_len = buffer(FIRST_FIELD,1):uint() -- first field len, binary
-    subtree = ogtree:add(unifi_proto.fields.preamble, buffer(FIRST_FIELD+1,temp_len))
-    subtree:add(unifi_proto.fields.preamble2_mac, buffer(FIRST_FIELD+1, temp_len - 4))
-    subtree:add(unifi_proto.fields.preamble2, buffer(FIRST_FIELD+1+6, 4))
-    pkt_ptr = FIRST_FIELD + temp_len + 3
-    temp_len = buffer(pkt_ptr,1):uint()
-    ogtree:add(unifi_proto.fields.source_mac, buffer(pkt_ptr+1, temp_len))
-    pkt_ptr = pkt_ptr + temp_len + 3
-    temp_len = buffer(pkt_ptr,1):uint()
-    subtree:add(unifi_proto.fields.preamble3, buffer(pkt_ptr+1, temp_len))
-    pkt_ptr = pkt_ptr + temp_len + 3
-    temp_len = buffer(pkt_ptr,1):uint()
-    ogtree:add(unifi_proto.fields.name, buffer(pkt_ptr+1, temp_len))
-    pkt_ptr = pkt_ptr + temp_len + 3
-    temp_len = buffer(pkt_ptr,1):uint()
-    ogtree:add(unifi_proto.fields.product_code, buffer(pkt_ptr+1, temp_len))
-    pkt_ptr = pkt_ptr + temp_len + 3
-    temp_len = buffer(pkt_ptr,1):uint()
-    ogtree:add(unifi_proto.fields.firmware, buffer(pkt_ptr+1, temp_len))
-    pkt_ptr = pkt_ptr + temp_len + 3
-    temp_len = buffer(pkt_ptr,1):uint()
-    ogtree:add(unifi_proto.fields.version, buffer(pkt_ptr+1, temp_len))
-    pkt_ptr = pkt_ptr + temp_len + 3
-    temp_len = buffer(pkt_ptr,1):uint()
-    ogtree:add(unifi_proto.fields.product_code_again, buffer(pkt_ptr+1, temp_len))
-    pkt_ptr = pkt_ptr + temp_len + 3
-    temp_len = buffer(pkt_ptr,1):uint()
-    subtree = ogtree:add(unifi_proto.fields.seventeen, buffer(pkt_ptr+1, temp_len))
-    pkt_ptr = pkt_ptr + temp_len + 3
-    temp_len = buffer(pkt_ptr,1):uint()
-    subtree:add(unifi_proto.fields.eighteen, buffer(pkt_ptr+1, temp_len))
-    pkt_ptr = pkt_ptr + temp_len + 3
-    temp_len = buffer(pkt_ptr,1):uint()
-    subtree:add(unifi_proto.fields.nineteen, buffer(pkt_ptr+1, temp_len))
-    pkt_ptr = pkt_ptr + temp_len + 3
-    temp_len = buffer(pkt_ptr,1):uint()
-    subtree:add(unifi_proto.fields.oneayy, buffer(pkt_ptr+1, temp_len))
-    pkt_ptr = pkt_ptr + temp_len + 3
-    temp_len = buffer(pkt_ptr,1):uint()
-    subtree:add(unifi_proto.fields.mac_address_again, buffer(pkt_ptr+1, temp_len))
-    pkt_ptr = pkt_ptr + temp_len + 3
-    temp_len = buffer(pkt_ptr,1):uint()
-    subtree:add(unifi_proto.fields.twelve, buffer(pkt_ptr+1, temp_len))
-    pkt_ptr = pkt_ptr + temp_len + 3
-    temp_len = buffer(pkt_ptr,1):uint()
-    ogtree:add(unifi_proto.fields.different_version, buffer(pkt_ptr+1, temp_len))
 end
 
 function add_lookup_type(field_type, field_len, field_value_ptr)
-    local lookup_table = {
-	    0x01 - MAC
-        0x02 - MAC & 4 bytes that remain static per device
-	    0x03 - firmware
-        0x0A - 4 bytes that increment every 5 seconds
-        0x0B - Name - common name given to the device or hostname
-        0x0C - product code
-        0x10 - ???? 2 bytes	
-        0x12 - 4 bytes that change or increment every packet
-        0x13 - MAC
-        0x15 - product code
-        0x16 - version
-        0x17 - ????
-        0x18 - ????
-        0x19 - ????
-        0x1A - ????
-        0x1B - version - likely the backup firmware on the device
+    if field_type == 0x01 then
+		 -- MAC
+        ogtree:add(unifi_proto.fields.source_mac, buffer(field_value_ptr, field_len))
+	end
+	if field_type == 0x02 then
+		 -- MAC & 4 bytes that remain static per device
+        subtree = ogtree:add(unifi_proto.fields.preamble, buffer(field_value_ptr, field_len))
+        subtree:add(unifi_proto.fields.preamble2_mac, buffer(field_value_ptr, field_len - 4))
+        subtree:add(unifi_proto.fields.preamble2, buffer(field_value_ptr + 6, 4))
+	end
+	if field_type == 0x03 then
+		 -- firmware
+        ogtree:add(unifi_proto.fields.firmware, buffer(field_value_ptr, field_len))
+	end
+	if field_type == 0x0A then
+		 -- 4 bytes that increment every 5 seconds
+        ogtree:add(unifi_proto.fields.preamble3, buffer(field_value_ptr, field_len))
+	end
+	if field_type == 0x0B then
+		 -- Name then
+		 -- common name given to the device or hostname
+        ogtree:add(unifi_proto.fields.name, buffer(field_value_ptr, field_len))
+	end
+	if field_type == 0x0C then
+		 -- product code
+        ogtree:add(unifi_proto.fields.shortname, buffer(field_value_ptr, field_len))
+    end
+    --else if field_type == 0x10 then
+		 -- ???? 2 bytes	
+        -- TODO: addme
+	--end
+	if field_type == 0x12 then
+		 -- 4 bytes that change or increment every packet
+        ogtree:add(unifi_proto.fields.twelve, buffer(field_value_ptr, field_len))
+	end
+	if field_type== 0x13 then
+		 -- MAC
+        ogtree:add(unifi_proto.fields.mac_address_again, buffer(field_value_ptr, field_len))
+	end
+	if field_type == 0x15 then
+		 -- product code
+        ogtree:add(unifi_proto.fields.shortname_again, buffer(field_value_ptr, field_len))
+	end
+	if field_type == 0x16 then
+		 -- version
+        ogtree:add(unifi_proto.fields.version, buffer(field_value_ptr, field_len))
+	end
+	if field_type == 0x17 then
+		 -- ????
+        --unktree = 
+        ogtree:add(unifi_proto.fields.seventeen, buffer(field_value_ptr, field_len))
+	end
+	if field_type == 0x18 then
+		 -- ????
+        --unktree = 
+        ogtree:add(unifi_proto.fields.eighteen, buffer(field_value_ptr, field_len))
+	end
+	if field_type == 0x19 then
+		 -- ????
+        --unktree = 
+        ogtree:add(unifi_proto.fields.nineteen, buffer(field_value_ptr, field_len))
+	end
+	if field_type == 0x1A then
+		 -- ????
+        --unktree = 
+        ogtree:add(unifi_proto.fields.oneayy, buffer(field_value_ptr, field_len))
+	end
+	if field_type == 0x1B then
+		 -- version - likely the backup firmware on the device
+        ogtree:add(unifi_proto.fields.required_fw_version, buffer(field_value_ptr, field_len))
+    end
+end
 
 -- get UDP dissector table and add for port 10001
 udp_table = DissectorTable.get("udp.port")
