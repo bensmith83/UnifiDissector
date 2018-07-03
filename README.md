@@ -29,7 +29,7 @@ Right now this doesn't match on the type code above, it expects them in order. T
 `wireshark -X lua_script:unifi.lua <pcap>.pcap`
 
 ## Really?
-![lua_dissector_1](/img/unifi_lua_1.png "Yes.")
+![lua_dissector_1](/img/unifi_lua_2.png "Yes.")
 
 ## Why?
 Why not? If you have interesting traffic that doesn't parse, feel free to send it my way.
