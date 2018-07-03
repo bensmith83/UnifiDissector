@@ -1,5 +1,5 @@
 -- Declare protocol for dissection
-unifi_proto = Proto("unifi", "Unifi Broadcast Protocol")
+unifi_proto = Proto("unifi", "Unifi Discovery Protocol")
 
 -- Specifiy protocol fields
 unifi_proto.fields.payload_len = ProtoField.uint32("unifi.payload_len", "Payload Length")
@@ -37,10 +37,24 @@ function unifi_proto.dissector(buffer, pinfo, tree)
     pinfo.cols.protocol = "Unifi"
 
     -- create sub tree which represents the entire buffer
-    local ogtree = tree:add(unifi_proto, buffer(), "Unifi Protocol Data")
+    local ogtree = tree:add(unifi_proto, buffer(), "Unifi Discovery")
     local temp_len = 0
     local pkt_ptr = 0
     local payload_len = buffer(3,1):uint() -- payload len
+    local temp_type = 0
+    blip = buffer(0,1):uint()
+    blap = buffer(1,1):uint()
+    if (blip == 0x01 && blap == 0x00) || (blip == 0x06 && blap == 0x02) then
+        ogtree:add(unifi_proto.fields.payload_len, buffer(3, 1), payload_len)
+        pkt_ptr = 5
+        while pkt_ptr<payload_len do
+            temp_type = buffer(pkt_ptr, 1):uint()
+            pkt_ptr = pkt_ptr +1
+            temp_len = buffer(pkt_ptr, 2):uint()
+            pkt_ptr = pkt_ptr + 2
+        end
+    end
+
     ogtree:add(unifi_proto.fields.payload_len, buffer(3, 1), payload_len)
     temp_len = buffer(FIRST_FIELD,1):uint() -- first field len, binary
     subtree = ogtree:add(unifi_proto.fields.preamble, buffer(FIRST_FIELD+1,temp_len))
@@ -89,6 +103,25 @@ function unifi_proto.dissector(buffer, pinfo, tree)
     temp_len = buffer(pkt_ptr,1):uint()
     ogtree:add(unifi_proto.fields.different_version, buffer(pkt_ptr+1, temp_len))
 end
+
+function add_lookup_type(field_type, field_len, field_value_ptr)
+    local lookup_table = {
+	    0x01 - MAC
+        0x02 - MAC & 4 bytes that remain static per device
+	    0x03 - firmware
+        0x0A - 4 bytes that increment every 5 seconds
+        0x0B - Name - common name given to the device or hostname
+        0x0C - product code
+        0x10 - ???? 2 bytes	
+        0x12 - 4 bytes that change or increment every packet
+        0x13 - MAC
+        0x15 - product code
+        0x16 - version
+        0x17 - ????
+        0x18 - ????
+        0x19 - ????
+        0x1A - ????
+        0x1B - version - likely the backup firmware on the device
 
 -- get UDP dissector table and add for port 10001
 udp_table = DissectorTable.get("udp.port")

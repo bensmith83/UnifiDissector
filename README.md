@@ -6,11 +6,11 @@ Not a formal protocol. I observed a lot of traffic from to broadcast on UDP 1000
 
 ### General Structure
 Payload follows a Type Length Value (TLV) structure. The length seems to be two bytes wide. The types are as follow:
-* 0x0206 - begin message
+* 0x0206 | 0x0100 - begin message
 * 0x02 - MAC & 4 bytes that remain static per device
 * 0x01 - MAC
 * 0x0A - 4 bytes that increment every 5 seconds
-* 0x0B - UBNT
+* 0x0B - Name - common name given to the device or hostname
 * 0x0C - product code
 * 0x03 - firmware
 * 0x16 - version
@@ -22,7 +22,7 @@ Payload follows a Type Length Value (TLV) structure. The length seems to be two 
 * 0x13 - MAC
 * 0x12 - 4 bytes that change or increment every packet
 * 0x1B - version - likely the backup firmware on the device
-
+* 0x10 - ???? 2 bytes
 Right now this doesn't match on the type code above, it expects them in order. This will be fixed soon. If you have any suggestions for what some of these unknown fields are, please let me know.
 
 ## How?
