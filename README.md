@@ -6,24 +6,30 @@ I observed a lot of traffic from to broadcast on UDP 10001 and decided to throw 
 
 ### General Structure
 Payload follows a Type Length Value (TLV) structure. The length seems to be two bytes wide. The types are as follow:
-* 0x0206 | 0x0100 - begin message
-* 0x02 - MAC & 4 bytes that remain static per device
-* 0x01 - MAC
-* 0x0A - 4 bytes that increment every 5 seconds
-* 0x0B - Name - common name given to the device or hostname
-* 0x0C - product code
-* 0x03 - firmware
-* 0x16 - version
-* 0x15 - product code
-* 0x17 - ????
-* 0x18 - ????
-* 0x19 - ????
-* 0x1A - ????
-* 0x13 - MAC
-* 0x12 - 4 bytes that change or increment every packet
-* 0x1B - version - likely the backup firmware on the device
-* 0x10 - ???? 2 bytes
-Right now this doesn't match on the type code above, it expects them in order. This will be fixed soon. If you have any suggestions for what some of these unknown fields are, please let me know.
+|Type Code|Interpretation|
+|---------|--------------|
+|0x0206 \| 0x0100| Message start|
+|---------|--------------|
+|0x01     |Source MAC    |
+|0x02     |Preamble: MAC & Src IP|
+|0x03     |firmware|
+|0x0A     |time|
+|0x0B     |name|
+|0x0C     |shortname|
+|0x10     |unknown|
+|0x12     |count|
+|0x13     |mac address|
+|0x15     |shortname|
+|0x16     |version|
+|0x17     |unknown|
+|0x18     |unknown|
+|0x19     |unknown|
+|0x1A     |unknown|
+|0x1B     |Minimum Required Firmware|
+
+Note that there can be multiple preambles and they may represent multiple interfaces.
+
+If you have any suggestions for what some of these unknown fields are, please let me know.
 
 ## How?
 `wireshark -X lua_script:unifi.lua <pcap>.pcap`
