@@ -6,10 +6,10 @@ I observed a lot of traffic from to broadcast on UDP 10001 and decided to throw 
 
 ### General Structure
 Payload follows a Type Length Value (TLV) structure. The length seems to be two bytes wide. The types are as follow:
+
 |Type Code|Interpretation|
 |---------|--------------|
-|0x0206 \| 0x0100| Message start|
-|---------|--------------|
+|0x0206 \| 0x0100| Message start magic bytes|
 |0x01     |Source MAC    |
 |0x02     |Preamble: MAC & Src IP|
 |0x03     |firmware|
